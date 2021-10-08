@@ -16,7 +16,7 @@ case class Application(
 
 case class AppConfig(
     secretKey: String,
-    webDirs: List[String],
+    webDirs: Map[String, String],
     userRepo: String,
     bucketsTaskRepo: String
 )

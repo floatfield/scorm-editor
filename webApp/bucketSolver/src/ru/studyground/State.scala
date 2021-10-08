@@ -1,4 +1,4 @@
-package ru.studyground.buckets.solve
+package ru.studyground
 
 case class Bucket(name: String, values: List[String])
 

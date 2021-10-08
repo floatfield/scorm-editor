@@ -1,6 +1,7 @@
 import mill._
 import mill.define.Sources
 import mill.scalajslib.ScalaJSModule
+import mill.scalalib.api.CompilationResult
 import scalalib._
 
 val zioVersion = "1.0.11"
@@ -28,9 +29,26 @@ object webApp extends JavaModule { web =>
     override def ivyDeps = Agg(
       ivy"org.scala-js::scalajs-dom::1.1.0",
       ivy"com.raquo::laminar::0.13.0",
+      ivy"io.laminext::websocket::0.13.10",
       ivy"com.raquo::airstream::0.13.0",
       ivy"com.raquo::waypoint::0.4.2",
-      ivy"dev.zio::zio::$zioVersion",
+      ivy"dev.zio::zio-json::$zioJsonVersion",
+      ivy"com.lihaoyi::fastparse::$fastParseVersion"
+    )
+  }
+
+  object bucketSolver extends ScalaJSModule with Shared {
+    override def scalaJSVersion = "1.7.0"
+
+    override def sources: Sources = T.sources(
+      sharedSources,
+      millSourcePath / "src"
+    )
+
+    override def ivyDeps = Agg(
+      ivy"org.scala-js::scalajs-dom::1.1.0",
+      ivy"com.raquo::laminar::0.13.0",
+      ivy"com.raquo::airstream::0.13.0",
       ivy"dev.zio::zio-json::$zioJsonVersion",
       ivy"com.lihaoyi::fastparse::$fastParseVersion"
     )
@@ -42,6 +60,11 @@ object webApp extends JavaModule { web =>
       sharedSources,
       millSourcePath / "src"
     )
+
+    override def compile: T[CompilationResult] = T {
+      frontend.fastOpt.apply()
+      super.compile.apply()
+    }
 
     override def ivyDeps = Agg(
       ivy"com.sksamuel.avro4s::avro4s-core:4.0.10",

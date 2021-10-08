@@ -1,4 +1,4 @@
-package ru.studyground.buckets.solve
+package ru.studyground
 
 import com.raquo.domtypes.generic.codecs.StringAsIsCodec
 import com.raquo.laminar.api.L._
@@ -32,9 +32,15 @@ object Dropdown {
             )
           )
       ),
-      child <-- text.map(_.fold[Node](i(cls("dropdown icon")))(_ => i(cls("dropdown icon clear")))),
+      child <-- text.map(
+        _.fold[Node](i(cls("dropdown icon")))(_ =>
+          i(cls("dropdown icon clear"))
+        )
+      ),
       child <-- text.map(_.fold[Node](emptyNode)(t => div(cls("text"), t))),
-      child <-- text.map(_.fold[Node](div(cls("default text"), defaultText))(_ => emptyNode)),
+      child <-- text.map(
+        _.fold[Node](div(cls("default text"), defaultText))(_ => emptyNode)
+      ),
       div(
         cls("menu"),
         children <-- options.map(

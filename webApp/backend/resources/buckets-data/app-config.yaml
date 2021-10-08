@@ -1,0 +1,26 @@
+appConfig:
+  secretKey: some Secret Key goes here
+  webDirs:
+    static: /Users/feremeev/projects/temp/scalajs/buckets-data/web
+    frontend: /Users/feremeev/projects/temp/scalajs/buckets/out/webApp/frontend/fastOpt/dest
+    solver: /Users/feremeev/projects/temp/scalajs/buckets/out/webApp/bucketSolver/fastOpt/dest
+  userRepo: /Users/feremeev/projects/temp/scalajs/buckets-data/users
+  bucketsTaskRepo: /Users/feremeev/projects/temp/scalajs/buckets-data/bucket-tasks
+dbConfig:
+  url: nope
+  user: foo
+  password: bar
+h2Config:
+  properties:
+    dataSourceClassName: org.h2.jdbcx.JdbcDataSource
+    dataSource.url: jdbc:h2:file:/Users/feremeev/projects/temp/scalajs/buckets-data/buckets
+    dataSource.user: foo
+postgresConfig:
+  properties:
+    dataSourceClassName: org.postgresql.ds.PGSimpleDataSource
+    dataSource.user: postgres
+    dataSource.password: qwe
+    dataSource.databaseName: buckets
+    dataSource.portNumber: 5432
+    dataSource.serverName: localhost
+    connectionTimeout: 30000

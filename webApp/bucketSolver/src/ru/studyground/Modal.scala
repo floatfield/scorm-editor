@@ -1,5 +1,6 @@
-package ru.studyground.buckets.solve
+package ru.studyground
 
+import com.raquo.airstream.core.Signal
 import com.raquo.laminar.api.L._
 import org.scalajs.dom.MouseEvent
 

@@ -1,9 +1,8 @@
-package ru.studyground.buckets.solve
+package ru.studyground
 
 import com.raquo.laminar.api.L._
-import org.scalajs.dom
-import org.scalajs.dom.raw.DragEvent
-import ru.studyground.buckets.solve.Command._
+import org.scalajs.dom.DragEvent
+import ru.studyground.Command._
 
 
 sealed trait Command

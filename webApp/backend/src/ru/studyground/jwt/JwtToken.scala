@@ -20,9 +20,7 @@ object UserToken {
 trait JwtToken {
   def encode[A](tokenData: A)(implicit A: JsonEncoder[A]): UIO[String]
   def decode[A](token: String)(implicit A: JsonDecoder[A]): UIO[Option[A]]
-  def validate[A](token: String)(implicit
-      A: JsonDecoder[A]
-  ): IO[InvalidToken, Unit]
+  def validate(token: String): IO[InvalidToken, Unit]
 }
 
 object JwtToken {
@@ -36,44 +34,43 @@ object JwtToken {
   )(implicit A: JsonDecoder[A]): URIO[Has[JwtToken], Option[A]] =
     ZIO.accessM(_.get.decode(token))
 
-  def validate[A](
+  def validate(
       token: String
-  )(implicit A: JsonDecoder[A]): ZIO[Has[JwtToken], InvalidToken, Unit] =
+  ): ZIO[Has[JwtToken], InvalidToken, Unit] =
     ZIO.accessM(_.get.validate(token))
 
   private val algorithm = HS512
 
-  val live: URLayer[Has[AppConfig], Has[JwtToken]] = ZLayer.fromService[AppConfig, JwtToken](config =>
-    new JwtToken {
-      override def encode[A](tokenData: A)(implicit
-          A: JsonEncoder[A]
-      ): UIO[String] =
-        ZIO.effectTotal {
-          val claim =
-            JwtClaim(content = tokenData.toJson)
-          val header = JwtHeader(algorithm)
-          JwtZIO.encode(header, claim, config.secretKey)
-        }
+  val live: URLayer[Has[AppConfig], Has[JwtToken]] =
+    ZLayer.fromService[AppConfig, JwtToken](config =>
+      new JwtToken {
+        override def encode[A](tokenData: A)(implicit
+            A: JsonEncoder[A]
+        ): UIO[String] =
+          ZIO.effectTotal {
+            val claim =
+              JwtClaim(content = tokenData.toJson)
+            val header = JwtHeader(algorithm)
+            JwtZIO.encode(header, claim, config.secretKey)
+          }
 
-      override def decode[A](token: String)(implicit
-          A: JsonDecoder[A]
-      ): UIO[Option[A]] =
-        ZIO.effectTotal(
-          JwtZIO
-            .decode(token, config.secretKey, List(algorithm))
-            .toOption
-            .flatMap(claim => claim.content.fromJson[A].toOption)
-        )
-
-      override def validate[A](token: String)(implicit
-          A: JsonDecoder[A]
-      ): IO[InvalidToken, Unit] =
-        ZIO
-          .fromTry(
+        override def decode[A](token: String)(implicit
+            A: JsonDecoder[A]
+        ): UIO[Option[A]] =
+          ZIO.effectTotal(
             JwtZIO
               .decode(token, config.secretKey, List(algorithm))
+              .toOption
+              .flatMap(claim => claim.content.fromJson[A].toOption)
           )
-          .bimap(_ => InvalidToken(token), _ => ())
-    }
-  )
+
+        override def validate(token: String): IO[InvalidToken, Unit] =
+          ZIO
+            .effect(
+              JwtZIO
+                .validate(token, config.secretKey, List(algorithm))
+            )
+            .mapBoth(_ => InvalidToken(token), _ => ())
+      }
+    )
 }

@@ -56,7 +56,6 @@ object TopMenu {
         cls("ui container"),
         menuItem(Welcome, WelcomeApp.MenuTitle),
         menuItem(BucketsPage.ListBucketTasks, BucketsApp.MenuTitle),
-//        a(cls("item"), "Тесты"),
         div(
           cls("right menu"),
           child <-- state.map(_.token match {

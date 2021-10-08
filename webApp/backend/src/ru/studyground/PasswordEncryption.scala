@@ -18,8 +18,8 @@ object PasswordEncryption {
   def hash(s: String): RIO[Has[PasswordEncryption], SaltyHash] =
     ZIO.accessM(_.get.hash(s))
 
-  val live: ZLayer[Has[Random.Service], Nothing, Has[PasswordEncryption]] =
-    ZLayer.fromService[Random.Service, PasswordEncryption](PasswordEncryptor)
+  val live: ZLayer[Random, Nothing, Has[PasswordEncryption]] =
+    ZLayer.fromService(PasswordEncryptor)
 
 }
 

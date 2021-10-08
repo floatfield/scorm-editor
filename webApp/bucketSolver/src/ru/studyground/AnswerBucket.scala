@@ -1,8 +1,7 @@
-package ru.studyground.buckets.solve
+package ru.studyground
 
 import com.raquo.laminar.api.L._
-import org.scalajs.dom.MouseEvent
-import org.scalajs.dom.raw.DragEvent
+import org.scalajs.dom.{DragEvent, MouseEvent}
 
 object AnswerBucket {
   def renderBucket(
@@ -38,23 +37,26 @@ object AnswerBucket {
       div(
         cls("ui segment"),
         children <-- bucket.map(
-          _.values.map(
-            value =>
+          _.values.map(value =>
+            div(
+              cls("ui clearing segment"),
               div(
-                cls("ui clearing segment"),
-                div(
-                  cls("ui top right attached label"),
-                  i(cls("close icon")),
-                  onClick --> commandObserver.contramap[MouseEvent](_ => Command.RemoveAnswer(id, value))
-                ),
-                value
-              )
+                cls("ui top right attached label"),
+                i(cls("close icon")),
+                onClick --> commandObserver.contramap[MouseEvent](_ =>
+                  Command.RemoveAnswer(id, value)
+                )
+              ),
+              value
+            )
           )
         ),
         div(
           cls("ui blue labeled basic icon button"),
           i(cls("plus icon")),
-          onClick --> commandObserver.contramap[MouseEvent](_ => Command.ShowModal(id)),
+          onClick --> commandObserver.contramap[MouseEvent](_ =>
+            Command.ShowModal(id)
+          ),
           "Add answer"
         )
       ),

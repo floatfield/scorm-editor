@@ -17,7 +17,7 @@ object tokenAuthorization {
           .orElseFail(HttpError.Forbidden())
       _ <-
         JwtToken
-          .validate[UserToken](token)
+          .validate(token)
           .mapError(err =>
             HttpError.BadRequest(s"token ${err.token} is invalid")
           )

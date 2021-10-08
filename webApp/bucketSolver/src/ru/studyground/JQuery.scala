@@ -1,4 +1,4 @@
-package ru.studyground.buckets.solve
+package ru.studyground
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal

@@ -2,7 +2,6 @@ package ru
 package studyground
 package http
 
-import ru.studyground.config.AppConfig
 import ru.studyground.domain.user.UserRepoService
 import ru.studyground.jwt.{JwtToken, UserToken}
 import zhttp.http.Header.authorization
@@ -23,7 +22,10 @@ object LoginRequest {
 object user {
 
   type UserEnv =
-    Has[UserRepoService] with Has[JwtToken] with Has[AppConfig] with Blocking
+    Has[UserRepoService]
+      with Has[JwtToken]
+      with Has[StaticDirectorySet]
+      with Blocking
 
   val userRoutes: HttpApp[UserEnv, HttpError] = HttpApp.collectM {
     case r @ Method.POST -> Root / "register" =>
@@ -31,7 +33,14 @@ object user {
     case r @ Method.POST -> Root / "login" =>
       login(r)
     case Method.GET -> Root =>
-      fromAsset(Path("buckets.html"))
+      for {
+        d <-
+          ZIO
+            .access[Has[StaticDirectorySet]](_.get.getDirValue("static"))
+            .flatMap(ZIO.fromOption(_))
+            .orElseFail(HttpError.InternalServerError())
+        res <- fromAsset(s"$d/buckets.html")
+      } yield res
   }
 
   private def register(r: Request): ResponseM[UserEnv, HttpError] =
