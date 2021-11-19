@@ -1,4 +1,4 @@
-package ru.studyground
+package ru.studyground.solver
 
 import com.raquo.airstream.core.Signal
 import com.raquo.laminar.api.L._

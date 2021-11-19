@@ -1,36 +1,17 @@
-package ru.studyground
+package ru.studyground.solver
+
+import ru.studyground.{BucketsAssignment, BucketsTaskId}
 
 case class Bucket(name: String, values: List[String])
 
 object Bucket {
   val empty: Bucket = Bucket("", Nil)
-}
-
-case class Task(
-    description: String,
-    buckets: List[Bucket],
-    bucketNames: List[String]
-) {
-  def toState: State = {
-    val values =
-      buckets
-        .foldLeft(Set.empty[String])((bs, b) => bs ++ b.values)
-        .toList
-        .sorted
-    val assignedBucketNames = (buckets.map(_.name).toSet -- bucketNames).toList
-    val answers =
-      assignedBucketNames.map(name => Bucket(name, Nil)).toVector ++
-        List.fill(buckets.size - assignedBucketNames.size)(Bucket.empty)
-    State(
-      answers = answers,
-      values = values,
-      bucketNames = bucketNames.toSet,
-      modal = ModalState.Closed
-    )
-  }
+  def fromName(name: String): Bucket = Bucket(name, List.empty)
 }
 
 case class State(
+    id: BucketsTaskId,
+    description: String,
     answers: Vector[Bucket],
     values: List[String],
     bucketNames: Set[String],
@@ -49,7 +30,7 @@ case class State(
     val bucket = answers(bucketId)
     val newAnswers = (bucket.values.toSet + answer).toList.sorted
     self.copy(
-      answers.updated(bucketId, bucket.copy(values = newAnswers))
+      answers = answers.updated(bucketId, bucket.copy(values = newAnswers))
     )
   }
 
@@ -77,4 +58,15 @@ case class State(
 
   def resetModal: State =
     self.copy(modal = ModalState.Closed)
+}
+
+object State {
+  def fromBucketsAssignment(assignment: BucketsAssignment): State = State(
+    id = assignment.id,
+    description = assignment.description,
+    answers = assignment.assignedBucketNames.map(Bucket.fromName).toVector,
+    values = assignment.values,
+    bucketNames = assignment.bucketNames.toSet,
+    modal = ModalState.Closed
+  )
 }

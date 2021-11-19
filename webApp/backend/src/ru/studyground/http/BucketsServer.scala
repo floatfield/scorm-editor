@@ -8,6 +8,8 @@ import zhttp.service.Server
 import zio._
 import zio.blocking.Blocking
 import zio.random._
+import ContentRoutes.{routes => contentRoutes}
+import ru.studyground.jwt.JwtToken
 
 import java.util.UUID
 import scala.util.Try
@@ -20,10 +22,15 @@ final case class RemoveTasks(ids: List[BucketsTaskId]) extends BucketsTaskEvent
 
 object BucketsServer {
 
+  type Env = Random with Has[BucketsTaskRepository] with Blocking with Has[
+    Hub[BucketsTaskEvent]
+  ] with Has[JwtToken]
+
+  private def bucketsRoutes(pf: PartialReq[Env]): HttpApp[Env, HttpError] =
+    jsonContent(pf) >>> authorizedM(pf)
+
   private val bucketsTasks =
-    authorizedM[Random with Has[BucketsTaskRepository] with Blocking with Has[
-      Hub[BucketsTaskEvent]
-    ]] {
+    jsonC >>> authorizedM {
       case r @ Method.POST -> Root / "buckets" =>
         createBucketsTask(r)
       case r @ Method.PUT -> Root / "buckets" / uuid =>
@@ -53,7 +60,10 @@ object BucketsServer {
     } yield Response.ok
   }
 
-  private def setTask(uuid: UUID, r: Request) =
+  private def setTask(
+      uuid: UUID,
+      r: Request
+  ): ZIO[Has[BucketsTaskRepository] with Blocking, HttpError, BucketsTask] =
     for {
       bucketsTaskDTO <- extractData[BucketsTaskDTO](r)
       bucketsTask <-
@@ -87,10 +97,11 @@ object BucketsServer {
   ): ZIO[Has[BucketsTaskRepository] with Blocking, HttpError, UResponse] =
     BucketsTaskRepository
       .delete(uuid)
-      .mapBoth(_ => HttpError.InternalServerError(), _ => Response.ok)
+      .bimap(_ => HttpError.InternalServerError(), _ => Response.ok)
 
   private val app =
-    static.static +++ user.userRoutes +++ bucketsTasks +++ WsRoutes.routes
+    Http.fromEffectFunction[Request](r => ZIO.effectTotal(println(r.url.asString, r.isJsonContentType)).as(r)) >>>
+    (static.static +++ bucketsTasks +++ user.userRoutes +++ contentRoutes +++ WsRoutes.routes)
 
   val startServer = Server.start(8080, app.silent)
 }

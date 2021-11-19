@@ -9,8 +9,6 @@ import java.nio.file.Paths
 
 case class Application(
     appConfig: AppConfig,
-    dbConfig: DbConfig,
-    h2Config: Option[H2Config],
     postgresConfig: Option[PostgresConfig]
 )
 
@@ -19,16 +17,6 @@ case class AppConfig(
     webDirs: Map[String, String],
     userRepo: String,
     bucketsTaskRepo: String
-)
-
-case class DbConfig(
-    url: String,
-    user: String,
-    password: String
-)
-
-case class H2Config(
-    properties: Map[String, String]
 )
 
 case class PostgresConfig(
@@ -42,7 +30,7 @@ object config {
   val live: Layer[ReadError[String], Has[Application]] =
     YamlConfig.fromPath(
       Paths.get(
-        "/Users/feremeev/projects/temp/scalajs/buckets-data/app-config.yaml"
+        "/home/bitterlife/rubbish_heap/rubbish/botva/scala/scorm-editor/webApp/backend/resources/buckets-data/app-config.yaml"
       ),
       configDescr
     )

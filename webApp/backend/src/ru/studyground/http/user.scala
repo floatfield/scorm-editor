@@ -24,24 +24,17 @@ object user {
   type UserEnv =
     Has[UserRepoService]
       with Has[JwtToken]
-      with Has[StaticDirectorySet]
       with Blocking
 
-  val userRoutes: HttpApp[UserEnv, HttpError] = HttpApp.collectM {
-    case r @ Method.POST -> Root / "register" =>
-      register(r)
-    case r @ Method.POST -> Root / "login" =>
-      login(r)
-    case Method.GET -> Root =>
-      for {
-        d <-
-          ZIO
-            .access[Has[StaticDirectorySet]](_.get.getDirValue("static"))
-            .flatMap(ZIO.fromOption(_))
-            .orElseFail(HttpError.InternalServerError())
-        res <- fromAsset(s"$d/buckets.html")
-      } yield res
-  }
+  private def userRoutes(pf: PartialReq[UserEnv]): HttpApp[UserEnv, HttpError] = jsonContent(pf) >>> HttpApp.collectM(pf)
+
+  val userRoutes: HttpApp[UserEnv, HttpError] =
+    userRoutes {
+      case r @ Method.POST -> Root / "register" =>
+        register(r)
+      case r @ Method.POST -> Root / "login" =>
+        login(r)
+    }
 
   private def register(r: Request): ResponseM[UserEnv, HttpError] =
     for {

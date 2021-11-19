@@ -70,7 +70,7 @@ object JwtToken {
               JwtZIO
                 .validate(token, config.secretKey, List(algorithm))
             )
-            .mapBoth(_ => InvalidToken(token), _ => ())
+            .bimap(_ => InvalidToken(token), _ => ())
       }
     )
 }

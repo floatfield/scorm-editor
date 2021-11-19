@@ -1,4 +1,4 @@
-package ru.studyground
+package ru.studyground.solver
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal

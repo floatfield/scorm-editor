@@ -13,7 +13,7 @@ import zio.json._
 
 object MainApp {
 
-  val ws = WebSocket.url(s"ws://${dom.document.location.host}/buckets-tasks").text[ServerMessage, ClientMessage](
+  private val ws = WebSocket.url(s"ws://${dom.document.location.host}/buckets-tasks").text[ServerMessage, ClientMessage](
     _.toJson,
     s => s.fromJson[ServerMessage].fold(s => Left(new Exception(s)), Right(_))
   ).build(managed = false)
@@ -52,7 +52,7 @@ object MainApp {
     )
     .collectSignal[BucketsPage]($page => BucketsApp.render($page, router, state.signal, commandObserver, ws))
 
-  val application = div(
+  private val application = div(
     state.signal.map(_.token) --> ws.reconnect.contracollect[Option[String]] {
       case Some(_) =>
         println("connecting to socket server")
@@ -65,7 +65,8 @@ object MainApp {
         s.prependBucketsTasks(tasks)
       case (UpdateBucketsTask(task), s) =>
         s.updateBucketsTask(task)
-      case (RemoveBucketsTasks(ids), s) => s.removeBucketsTasks(ids)
+      case (RemoveBucketsTasks(ids), s) =>
+        s.removeBucketsTasks(ids)
     },
     ws.errors --> Observer[Throwable](err => console.error(err)),
     TopMenu(state.signal, commandObserver)(router),

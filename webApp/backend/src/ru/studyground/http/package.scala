@@ -12,6 +12,8 @@ import java.nio.file.{Files, Paths}
 
 package object http {
 
+  type PartialReq[R] = PartialFunction[Request, ZIO[R, HttpError, Response[R, HttpError]]]
+
   private[http] def fromAsset(
       path: String
   ): URIO[Blocking, Response[Blocking, HttpError]] =
@@ -59,7 +61,17 @@ package object http {
   ): HttpApp[R with Has[JwtToken], HttpError] = tokenAuthorization.auth(pf)
 
   def authorizedM[R](
-      pf: PartialFunction[Request, ZIO[R, HttpError, Response[R, HttpError]]]
+      pf: PartialReq[R]
   ): HttpApp[R with Has[JwtToken], HttpError] = tokenAuthorization.authM(pf)
+
+  def jsonC[R]: Http[R, HttpError, Request, Request] = Http.collect {
+    case r if r.isJsonContentType => r
+  }
+
+  def jsonContent[R](
+    pf: PartialReq[R]
+  ): Http[R, HttpError, Request, Request] = Http.collect {
+    case r if r.isJsonContentType && pf.isDefinedAt(r) => r
+  }
 
 }

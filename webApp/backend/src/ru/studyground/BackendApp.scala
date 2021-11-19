@@ -19,7 +19,6 @@ object BackendApp extends App {
 
   private val postgresConfig = configLayer
     .narrow(_.postgresConfig.get)
-    .mapError(_ => new Exception("no database config found"))
 
   private val migration = (Blocking.live ++ postgresConfig) >>> Migration.live
 

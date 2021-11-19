@@ -1,4 +1,4 @@
-package ru.studyground
+package ru.studyground.solver
 
 import com.raquo.laminar.api.L._
 import org.scalajs.dom.{DragEvent, MouseEvent}

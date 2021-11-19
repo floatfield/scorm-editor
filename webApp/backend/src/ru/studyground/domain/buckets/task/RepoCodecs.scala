@@ -1,8 +1,7 @@
 package ru.studyground.domain.buckets.task
 
 import com.sksamuel.avro4s.{AvroInputStream, AvroOutputStream, AvroSchema}
-import ru.studyground.BucketsTask
-import ru.studyground.{RepoCodec, StreamDecoder}
+import ru.studyground.{BucketsTask, RepoCodec, StreamDecoder}
 import zio.stream.ZStream
 import zio.{Task, ZIO}
 
@@ -11,7 +10,7 @@ import java.util.UUID
 import scala.util.Success
 
 final case class DeserializationException(bytes: Array[Byte], className: String)
-    extends Exception
+  extends Exception
 
 object RepoCodecs {
 
@@ -71,10 +70,9 @@ object RepoCodecs {
 
     override def fromInputStream(is: InputStream): ZStream[Any, Throwable, BucketsTask] =
       for {
-        it <- ZStream.fromEffect(ZIO.effect{
-          val avroIs = AvroInputStream.binary[BucketsTask].from(is).build(schema)
-          avroIs.iterator
-        })
+        it <- ZStream.fromEffect(ZIO.effect(
+          AvroInputStream.binary[BucketsTask].from(is).build(schema).iterator
+        ))
         b <- ZStream.fromIterator(it)
       } yield b
   }
