@@ -1,9 +1,11 @@
 package ru.studyground
 
+import com.raquo.airstream.web.AjaxEventStream
+import com.raquo.airstream.web.AjaxEventStream.AjaxStreamError
 import com.raquo.laminar.api.L._
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import com.raquo.waypoint._
-import org.scalajs.dom.{MouseEvent, html}
+import org.scalajs.dom.{console, html}
 import ru.studyground.Page.{Login, Welcome}
 import ru.studyground.buckets.BucketsApp
 
@@ -37,13 +39,40 @@ object TopMenu {
       )
     )
 
-  def logoutButton(observer: Observer[Command]): Div =
+  def logoutButton(implicit router: Router[Page]): Div =
     div(
       cls("item"),
       a(
         cls("ui button"),
         "Выйти",
-        onClick.preventDefault --> observer.contramap[MouseEvent](_ => Command.Logout)
+        inContext { thisNode =>
+          val $req = thisNode.events(onClick.preventDefault).flatMap { _ =>
+            val headers = Map("Content-type" -> "application/json")
+            val url = "/logout"
+            AjaxEventStream
+              .post(url, "", headers = headers)
+              .map(r => Right(r.responseText))
+              .recover {
+                case err: AjaxStreamError =>
+                  console.error(err.getMessage)
+                  Some(Left(err.xhr.responseText))
+              }
+          }
+          List(
+            $req --> Observer[Either[String, String]](_.foreach(_ => router.pushState(Login)))
+          )
+        }
+      )
+    )
+
+  def menu(implicit router: Router[Page]): Div =
+    div(
+      cls("ui container"),
+      menuItem(Welcome, WelcomeApp.MenuTitle),
+      menuItem(BucketsPage.ListBucketTasks, BucketsApp.MenuTitle),
+      div(
+        cls("right menu"),
+        logoutButton
       )
     )
 
@@ -52,21 +81,10 @@ object TopMenu {
   ): ReactiveHtmlElement[html.Div] = {
     div(
       cls("ui large top menu"),
-      div(
-        cls("ui container"),
-        menuItem(Welcome, WelcomeApp.MenuTitle),
-        menuItem(BucketsPage.ListBucketTasks, BucketsApp.MenuTitle),
-        div(
-          cls("right menu"),
-          child <-- state.map(_.token match {
-            case Some(_) => logoutButton(observer)
-            case None => buttonMenuItem(
-              Login,
-              LoginApp.MenuTitle
-            )
-          })
-        )
-      )
+      child <-- router.$currentPage.map {
+        case Login => emptyNode
+        case _ => menu
+      }
     )
   }
 }

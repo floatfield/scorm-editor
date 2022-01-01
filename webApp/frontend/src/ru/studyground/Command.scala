@@ -3,19 +3,15 @@ package ru.studyground
 sealed trait Command
 
 object Command {
-  final case class SetToken(token: String) extends Command
-  case object Logout extends Command
 
   def dispatch(state: MainAppState, command: Command): MainAppState =
     command match {
-      case Command.SetToken(token) =>
-        state.setToken(token)
-      case Command.Logout =>
-        state.logout
       case c: LoginCommand =>
         state.setLoginState(LoginCommand.dispatch(state.loginState, c))
       case c: BucketsTaskCommand =>
         state.setBucketsTaskState(BucketsTaskCommand.dispatch(state.bucketsTaskState, c))
+      case c: BucketsListCommand =>
+        BucketsListCommand.dispatch(state, c)
     }
 }
 
@@ -62,4 +58,25 @@ object BucketsTaskCommand {
       }
       case SetState(s) => s
     }
+}
+
+sealed trait BucketsListCommand extends Command
+
+object BucketsListCommand {
+  final case class SetBucketsTasks(task: List[BucketsTask]) extends BucketsListCommand
+  final case class PrependBucketsTasks(tasks: List[BucketsTask]) extends BucketsListCommand
+  final case class UpdateBucketsTask(task: BucketsTask) extends BucketsListCommand
+  final case class RemoveBucketsTasks(ids: List[BucketsTaskId]) extends BucketsListCommand
+
+  def dispatch(state: MainAppState, command: BucketsListCommand): MainAppState = command match {
+    case SetBucketsTasks(tasks) =>
+      println("setting tasks", tasks)
+      state.setBucketsTasks(tasks)
+    case PrependBucketsTasks(tasks) =>
+      state.prependBucketsTasks(tasks)
+    case UpdateBucketsTask(task) =>
+      state.updateBucketsTask(task)
+    case RemoveBucketsTasks(ids) =>
+      state.removeBucketsTasks(ids)
+  }
 }

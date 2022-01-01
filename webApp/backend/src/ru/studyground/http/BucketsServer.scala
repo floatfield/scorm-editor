@@ -8,7 +8,9 @@ import zhttp.service.Server
 import zio._
 import zio.blocking.Blocking
 import zio.random._
+import zio.json._
 import ContentRoutes.{routes => contentRoutes}
+import ru.studyground.domain.buckets.task.BucketsTaskRepository.getAll
 import ru.studyground.jwt.JwtToken
 
 import java.util.UUID
@@ -26,27 +28,33 @@ object BucketsServer {
     Hub[BucketsTaskEvent]
   ] with Has[JwtToken]
 
-  private def bucketsRoutes(pf: PartialReq[Env]): HttpApp[Env, HttpError] =
-    jsonContent(pf) >>> authorizedM(pf)
-
   private val bucketsTasks =
-    jsonC >>> authorizedM {
-      case r @ Method.POST -> Root / "buckets" =>
+    jsonContent[Env] >>> authorizedM[Env] {
+      case Method.GET -> !! / "buckets" =>
+        getAllBucketTasks
+      case r @ Method.POST -> !! / "buckets" =>
         createBucketsTask(r)
-      case r @ Method.PUT -> Root / "buckets" / uuid =>
+      case r @ Method.PUT -> !! / "buckets" / uuid =>
         ZIO
           .fromTry(Try(UUID.fromString(uuid)))
           .orElseFail(
             BadRequest(s"uuid $uuid has wrong format")
           )
           .flatMap(uuid => setBucketsTask(uuid, r))
-      case Method.DELETE -> Root / "buckets" / uuid =>
+      case Method.DELETE -> !! / "buckets" / uuid =>
         ZIO
           .fromTry(Try(UUID.fromString(uuid)))
           .orElseFail(
             BadRequest(s"uuid $uuid has wrong format")
           ) >>= removeBucketsTask
     }
+
+  private def getAllBucketTasks: ZIO[Has[BucketsTaskRepository] with Blocking, HttpError, UResponse] = {
+    getAll.mapBoth(
+      _ => HttpError.InternalServerError(),
+      tasks => Response.text(tasks.toJson)
+    )
+  }
 
   private def createBucketsTask(r: Request): ZIO[Random with Has[
     BucketsTaskRepository
@@ -99,9 +107,7 @@ object BucketsServer {
       .delete(uuid)
       .bimap(_ => HttpError.InternalServerError(), _ => Response.ok)
 
-  private val app =
-    Http.fromEffectFunction[Request](r => ZIO.effectTotal(println(r.url.asString, r.isJsonContentType)).as(r)) >>>
-    (static.static +++ bucketsTasks +++ user.userRoutes +++ contentRoutes +++ WsRoutes.routes)
+  private val app = static.static ++ bucketsTasks ++ user.userRoutes ++ contentRoutes
 
   val startServer = Server.start(8080, app.silent)
 }

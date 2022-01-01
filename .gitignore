@@ -12,3 +12,4 @@ target
 /.settings
 /out
 .bsp
+webApp/backend/resources/buckets-data/bucket-tasks

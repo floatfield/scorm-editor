@@ -18,7 +18,7 @@ object BackendApp extends App {
   type AppEnv = Blocking with Random with Console with Has[AppConfig]
 
   private val postgresConfig = configLayer
-    .narrow(_.postgresConfig.get)
+    .narrow(_.postgresConfig)
 
   private val migration = (Blocking.live ++ postgresConfig) >>> Migration.live
 
@@ -32,7 +32,7 @@ object BackendApp extends App {
   private val staticDirectoryLayer = appConfigLayer >>> http.static.staticDirectorySetLayer
 
   private val bucketsTaskRepoLayer =
-    (Blocking.live ++ appConfigLayer ++ Console.live) >>> BucketsTaskRepository.live
+    (postgresConfig >>> datasource.hicari) >>> BucketsTaskRepository.dbLayer
 
   private val jwtTokenLayer = appConfigLayer >>> JwtToken.live
 

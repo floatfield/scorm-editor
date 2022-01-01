@@ -1,23 +1,17 @@
 package ru.studyground
 
 final case class MainAppState(
-    token: Option[String],
     loginState: LoginState,
     bucketsTaskState: BucketsTaskState,
-    bucketsTaskList: List[BucketsTask]
+    bucketsTaskList: List[BucketsTask],
+    isLoggedIn: Boolean
 ) { self =>
-  def setToken(t: String): MainAppState =
-    self.copy(token = Some(t))
-  def logout: MainAppState =
-    self.copy(
-      token = None,
-      loginState = LoginState.empty,
-      bucketsTaskList = Nil
-    )
   def setLoginState(l: LoginState): MainAppState =
     self.copy(loginState = l)
   def setBucketsTaskState(s: BucketsTaskState): MainAppState =
     self.copy(bucketsTaskState = s)
+  def setBucketsTasks(tasks: List[BucketsTask]): MainAppState =
+    self.copy(bucketsTaskList = tasks)
   def prependBucketsTasks(tasks: List[BucketsTask]): MainAppState =
     self.copy(bucketsTaskList = (tasks ++ bucketsTaskList).distinct)
   def updateBucketsTask(task: BucketsTask): MainAppState =
@@ -34,10 +28,10 @@ final case class MainAppState(
 object MainAppState {
   val empty: MainAppState =
     MainAppState(
-      token = None,
       loginState = LoginState.empty,
       bucketsTaskState = BucketsTaskState.empty,
-      bucketsTaskList = Nil
+      bucketsTaskList = Nil,
+      isLoggedIn = false
     )
 }
 

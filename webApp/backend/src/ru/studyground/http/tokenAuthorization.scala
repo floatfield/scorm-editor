@@ -1,6 +1,7 @@
 package ru.studyground.http
 
 import ru.studyground.jwt.{JwtToken, UserToken}
+import zhttp.http.HasCookie.RequestCookie
 import zhttp.http._
 import zio.{Has, ZIO}
 
@@ -13,11 +14,11 @@ object tokenAuthorization {
     for {
       token <-
         ZIO
-          .fromOption(r.getBearerToken)
+          .fromOption(RequestCookie.decode(r).find(_.name == "token"))
           .orElseFail(HttpError.Forbidden())
       _ <-
         JwtToken
-          .validate(token)
+          .validate(token.content)
           .mapError(err =>
             HttpError.BadRequest(s"token ${err.token} is invalid")
           )

@@ -18,7 +18,8 @@ object LoginApp {
 
   def renderLogin(
       $state: Signal[LoginState],
-      mainAppObserver: Observer[Command]
+      mainAppObserver: Observer[Command],
+      router: Router[Page]
   ): Div = {
     val formContent = div(
       div(
@@ -73,9 +74,7 @@ object LoginApp {
                 _ => LoginCommand.SetFormState(FormState.Editing)
               )
             ),
-            $req --> mainAppObserver.contracollect[Either[String, String]] {
-              case Right(token) => Command.SetToken(token)
-            }
+            $req --> Observer[Either[String, String]](_.foreach(_ => router.pushState(Page.Welcome)))
           )
         }
       )

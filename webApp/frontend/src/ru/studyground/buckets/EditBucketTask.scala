@@ -61,8 +61,7 @@ object EditBucketTask {
             val $req = $click.flatMap {
               s =>
                 val headers = Map(
-                  "Content-Type" -> "application/json",
-                  "Authorization" -> s"Bearer ${s.token.getOrElse("")}"
+                  "Content-Type" -> "application/json"
                 )
                 val url = "/buckets"
                 val $ajax = s.bucketsTaskState.id match {

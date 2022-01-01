@@ -2,7 +2,6 @@ package ru.studyground.buckets
 
 import com.raquo.laminar.api.L._
 import com.raquo.waypoint._
-import io.laminext.websocket.WebSocket
 import ru.studyground.BucketsPage.{ListBucketTasks, UpdateBucketTask, NewBucketTask}
 import ru.studyground.buckets.BucketTaskList.BucketsList
 import ru.studyground.buckets.uuidPathSegmentImplicits._
@@ -32,12 +31,11 @@ object BucketsApp {
       $page: Signal[BucketsPage],
       router: Router[Page],
       $state: Signal[MainAppState],
-      commandObserver: Observer[BucketsTaskCommand],
-      ws: WebSocket[ServerMessage, ClientMessage]
+      commandObserver: Observer[Command]
   ): Div = {
     val splitter = SplitRender[BucketsPage, HtmlElement]($page)
       .collectStatic(ListBucketTasks)(
-        BucketsList(router, $state.map(_.bucketsTaskList), ws)
+        BucketsList(router, $state.map(_.bucketsTaskList), commandObserver)
       )
       .collectStatic(NewBucketTask)(
         EditBucketTask.render(router, $state, Signal.fromValue(None), commandObserver)

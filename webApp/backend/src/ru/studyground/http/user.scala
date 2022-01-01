@@ -1,14 +1,14 @@
-package ru
-package studyground
-package http
+package ru.studyground.http
 
 import ru.studyground.domain.user.UserRepoService
 import ru.studyground.jwt.{JwtToken, UserToken}
 import zhttp.http.Header.authorization
 import zhttp.http._
+import zhttp._
 import zio.blocking.Blocking
 import zio.json._
 import zio.{Chunk, Has, ZIO}
+import java.nio.charset.Charset
 
 case class LoginRequest(login: String, password: String)
 
@@ -26,14 +26,14 @@ object user {
       with Has[JwtToken]
       with Blocking
 
-  private def userRoutes(pf: PartialReq[UserEnv]): HttpApp[UserEnv, HttpError] = jsonContent(pf) >>> HttpApp.collectM(pf)
-
   val userRoutes: HttpApp[UserEnv, HttpError] =
-    userRoutes {
-      case r @ Method.POST -> Root / "register" =>
+    jsonContent[UserEnv] >>> Http.collectM[Request] {
+      case r @ Method.POST -> !! / "register" =>
         register(r)
-      case r @ Method.POST -> Root / "login" =>
+      case r @ Method.POST -> !! / "login" =>
         login(r)
+      case Method.POST -> !! / "logout" =>
+        logout
     }
 
   private def register(r: Request): ResponseM[UserEnv, HttpError] =
@@ -59,13 +59,16 @@ object user {
                 .unless(valid)
           )
       token <- JwtToken.encode(UserToken(loginRequest.login))
-    } yield Response.HttpResponse(
+    } yield Response(
       Status.OK,
       List(
         authorization(s"Bearer $token"),
         Header("Set-Cookie", s"token=$token;HttpOnly")
       ),
-      HttpData.CompleteData(Chunk.fromArray(token.getBytes))
+      HttpData.fromText(token)
     )
+
+  private val logout: ResponseM[UserEnv, HttpError] =
+    ZIO.succeed(Response.ok.addCookie(Cookie("token", "").clear))
 
 }

@@ -48,5 +48,7 @@ object Command {
       Solving(assignment)
     case (Solving(a), Finish(answers)) =>
       Done(a.id, answers)
+    case (s, _) =>
+      s
   }
 }

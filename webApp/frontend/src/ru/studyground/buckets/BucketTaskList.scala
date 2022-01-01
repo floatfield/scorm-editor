@@ -2,18 +2,25 @@ package ru.studyground.buckets
 
 import com.raquo.laminar.api.L._
 import com.raquo.waypoint.Router
-import io.laminext.websocket.WebSocket
 import org.scalajs.dom.MouseEvent
+import ru.studyground.BucketsListCommand.{RemoveBucketsTasks, SetBucketsTasks}
 import ru.studyground.BucketsPage.UpdateBucketTask
 import ru.studyground._
+import ru.studyground.buckets.Requests.{loadBucketTasks, removeBucketsTask}
+import io.laminext.syntax.core._
 
 object BucketTaskList {
   def BucketsList(
       router: Router[Page],
       $bucketTaskList: Signal[List[BucketsTask]],
-      ws: WebSocket[ServerMessage, ClientMessage]
+      commandObserver: Observer[Command]
   ): Div =
     div(
+      loadBucketTasks --> commandObserver.contracollect[Either[String, List[BucketsTask]]] {
+        case Right(tasks) =>
+          println("will you set tasks?", tasks)
+          SetBucketsTasks(tasks)
+      },
       cls("ui loading container"),
       cls("buckets-tasks-list"),
       h3("Категории"),
@@ -32,7 +39,11 @@ object BucketTaskList {
                 div(
                   cls("ui icon button"),
                   i(cls("trash alternate icon")),
-                  onClick.preventDefault.stopPropagation --> ws.send.contramap[Any](_ => RemoveTask(key))
+                  thisEvents(onClick.preventDefault.stopPropagation)
+                    .flatMap(_ => removeBucketsTask(key)) -->
+                      commandObserver.contracollect[Option[String]]{
+                        case None => RemoveBucketsTasks(List(key))
+                      }
                 )
               ),
               div(

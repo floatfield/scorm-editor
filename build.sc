@@ -5,9 +5,10 @@ import mill.scalalib.api.CompilationResult
 import scalalib._
 
 val zioVersion = "1.0.11"
-val zioConfigVersion = "1.0.6"
+val zioConfigVersion = "1.0.10"
 val zioJsonVersion = "0.1.5"
 val fastParseVersion = "2.3.3"
+val laminarVersion = "0.14.2"
 
 //noinspection ScalaFileName
 object webApp extends JavaModule { web =>
@@ -27,11 +28,11 @@ object webApp extends JavaModule { web =>
     )
 
     override def ivyDeps = Agg(
-      ivy"org.scala-js::scalajs-dom::1.1.0",
-      ivy"com.raquo::laminar::0.13.0",
-      ivy"io.laminext::websocket::0.13.10",
-      ivy"com.raquo::airstream::0.13.0",
-      ivy"com.raquo::waypoint::0.4.2",
+      ivy"org.scala-js::scalajs-dom::2.0.0",
+      ivy"com.raquo::laminar::$laminarVersion",
+      ivy"io.laminext::core::$laminarVersion",
+      ivy"com.raquo::airstream::$laminarVersion",
+      ivy"com.raquo::waypoint::0.5.0",
       ivy"dev.zio::zio-json::$zioJsonVersion",
       ivy"com.lihaoyi::fastparse::$fastParseVersion"
     )
@@ -46,9 +47,9 @@ object webApp extends JavaModule { web =>
     )
 
     override def ivyDeps = Agg(
-      ivy"org.scala-js::scalajs-dom::1.1.0",
-      ivy"com.raquo::laminar::0.13.0",
-      ivy"com.raquo::airstream::0.13.0",
+      ivy"org.scala-js::scalajs-dom::2.0.0",
+      ivy"com.raquo::laminar::$laminarVersion",
+      ivy"com.raquo::airstream::$laminarVersion",
       ivy"dev.zio::zio-json::$zioJsonVersion",
       ivy"com.lihaoyi::fastparse::$fastParseVersion"
     )
@@ -69,7 +70,7 @@ object webApp extends JavaModule { web =>
     override def ivyDeps = Agg(
       ivy"com.sksamuel.avro4s::avro4s-core:4.0.10",
       ivy"com.lihaoyi::fastparse:$fastParseVersion",
-      ivy"io.d11::zhttp:1.0.0.0-RC17",
+      ivy"io.d11::zhttp:1.0.0.0-RC18",
       ivy"dev.zio::zio:$zioVersion",
       ivy"dev.zio::zio-streams:$zioVersion",
       ivy"com.github.jwt-scala::jwt-core:9.0.1",
@@ -77,7 +78,7 @@ object webApp extends JavaModule { web =>
       ivy"com.lihaoyi::fastparse:$fastParseVersion",
       ivy"dev.zio::zio-config:$zioConfigVersion",
       ivy"dev.zio::zio-config-magnolia:$zioConfigVersion",
-      ivy"dev.zio::zio-config-yaml:$zioConfigVersion",
+      ivy"dev.zio::zio-config-typesafe:$zioConfigVersion",
       ivy"dev.zio::zio-cache:0.1.0",
       ivy"org.postgresql:postgresql:42.2.8",
       ivy"io.getquill::quill-jdbc-zio:3.9.0",
