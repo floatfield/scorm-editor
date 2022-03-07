@@ -17,7 +17,7 @@ final case class MainAppState(
   def updateBucketsTask(task: BucketsTask): MainAppState =
     self.copy(bucketsTaskList = bucketsTaskList.map {
       case t if t.id == task.id => task
-      case t => t
+      case t                    => t
     })
   def removeBucketsTasks(ids: List[BucketsTaskId]): MainAppState =
     self.copy(bucketsTaskList =
@@ -61,12 +61,14 @@ final case class BucketsTaskState(
     id: Option[BucketsTaskId],
     name: String,
     description: String,
+    maxItemsNumber: Int,
     task: String,
     formState: FormState
 ) {
   val bucketsTaskDTO: BucketsTaskDTO = BucketsTaskDTO(
     name = name,
     description = description,
+    maxItemsNumber = maxItemsNumber,
     task = task
   )
 }
@@ -76,6 +78,7 @@ object BucketsTaskState {
     id = None,
     name = "",
     description = "",
+    maxItemsNumber = 5,
     task = "",
     formState = FormState.Editing
   )
@@ -85,6 +88,7 @@ object BucketsTaskState {
       id = Some(t.id),
       name = t.name,
       description = t.description,
+      maxItemsNumber = t.maxItemsNumber,
       task = t.bucketsTaskDTO.task,
       formState = FormState.Editing
     )

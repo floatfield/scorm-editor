@@ -13,8 +13,7 @@ case class Application(
 case class AppConfig(
     secretKey: String,
     webDirs: Map[String, String],
-    userRepo: String,
-    bucketsTaskRepo: String
+    bucketServer: String
 )
 
 case class PostgresConfig(

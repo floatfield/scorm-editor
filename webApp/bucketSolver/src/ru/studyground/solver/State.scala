@@ -1,13 +1,6 @@
 package ru.studyground.solver
 
-import ru.studyground.{BucketsAssignment, BucketsTaskId}
-
-case class Bucket(name: String, values: List[String])
-
-object Bucket {
-  val empty: Bucket = Bucket("", Nil)
-  def fromName(name: String): Bucket = Bucket(name, List.empty)
-}
+import ru.studyground.{BucketsAssignment, BucketsTaskId, BucketDTO => Bucket}
 
 case class State(
     id: BucketsTaskId,

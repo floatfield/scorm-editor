@@ -1,5 +1,6 @@
 package ru.studyground.solver
 
+import ru.studyground.{BucketDTO => Bucket}
 import com.raquo.airstream.core.Signal
 import com.raquo.laminar.api.L._
 import org.scalajs.dom.MouseEvent
@@ -57,7 +58,7 @@ object Modal {
         child <-- modalState.map {
           case ModalState.Closed => ""
           case ModalState.Open(_, Bucket(name, _)) =>
-            s"""Select answers for "$name" """
+            s"""Выберите ответы для категории "$name" """
         }
       ),
       div(
@@ -95,11 +96,11 @@ object Modal {
         div(
           cls("ui green approve left labeled icon button"),
           i(cls("checkmark icon")),
-          "Assign answers"
+          "Добавить"
         ),
         div(
           cls("ui black deny button"),
-          "Cancel"
+          "Отмена"
         )
       )
     )

@@ -3,10 +3,12 @@ package ru.studyground.solver
 import com.raquo.laminar.api.L._
 import org.scalajs.dom.DragEvent
 import ru.studyground.BucketsAssignment
+import ru.studyground.{Command => MainAppCommand}
+import io.laminext.syntax.core._
 
 object BucketsSolve {
 
-  def application(assignment: BucketsAssignment): Div = {
+  def application(assignment: BucketsAssignment, mainAppObserver: Observer[MainAppCommand]): Div = {
 
     val state = Var(State.fromBucketsAssignment(assignment))
 
@@ -56,7 +58,11 @@ object BucketsSolve {
             cls("column"),
             div(
               cls("ui right floated blue button"),
-              "Done"
+              "Done",
+              thisEvents(onClick).withCurrentValueOf(state.signal) -->
+                mainAppObserver.contramap[(Any, State)] {
+                  case (_, state) =>  MainAppCommand.Finish(state.answers.toList)
+                }
             )
           )
         )

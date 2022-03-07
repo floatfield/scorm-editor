@@ -7,12 +7,12 @@ import zio.json._
 import zio.stream.ZStream
 import zio.{Has, URIO, ZIO}
 
-import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 package object http {
 
-  type PartialReq[R] = PartialFunction[Request, ZIO[R, HttpError, Response[R, HttpError]]]
+  type PartialReq[R] =
+    PartialFunction[Request, ZIO[R, HttpError, Response[R, HttpError]]]
 
   private[http] def fromAsset(
       path: String
@@ -56,8 +56,14 @@ package object http {
       pf: PartialReq[R]
   ): HttpApp[R with Has[JwtToken], HttpError] = tokenAuthorization.authM(pf)
 
-  def jsonContent[R]: Http[R, HttpError, Request, Request] = Http.collect {
-    case r if r.isJsonContentType => r
-  }
+  def authorizedOrRedirectedM[R](location: String)(
+      pf: PartialReq[R]
+  ): HttpApp[R with Has[JwtToken], HttpError] =
+    tokenAuthorization.authRedirectM(location, pf)
+
+  def jsonContent[R]: Http[R, HttpError, Request, Request] =
+    Http.collect {
+      case r if r.isJsonContentType => r
+    }
 
 }

@@ -18,7 +18,6 @@ object BucketTaskList {
     div(
       loadBucketTasks --> commandObserver.contracollect[Either[String, List[BucketsTask]]] {
         case Right(tasks) =>
-          println("will you set tasks?", tasks)
           SetBucketsTasks(tasks)
       },
       cls("ui loading container"),
@@ -32,6 +31,12 @@ object BucketTaskList {
               cls("item"),
               div(
                 cls("right floated content"),
+                a(
+                  cls("ui icon button"),
+                  i(cls("eye icon")),
+                  href(s"buckets/${key.value}"),
+                  thisEvents(onClick.stopPropagation) --> Observer.empty
+                ),
                 div(
                   cls("ui icon button"),
                   i(cls("download icon"))

@@ -7,4 +7,5 @@ import scala.scalajs.js.annotation.JSGlobalScope
 @JSGlobalScope
 object Globals extends js.Object {
   val bucketsTaskId: String = js.native
+  val bucketsServer: String = js.native
 }

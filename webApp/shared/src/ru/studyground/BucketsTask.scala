@@ -1,7 +1,5 @@
 package ru.studyground
 
-import fastparse.NoWhitespace._
-import fastparse._
 import zio.json.JsonCodec.{
   seq => seqCodec,
   string => stringCodec,
@@ -11,7 +9,7 @@ import zio.json._
 
 import java.util.UUID
 
-final case class BucketName(name: String)
+final case class BucketName(name: String) extends AnyVal
 
 object BucketName {
   implicit val bucketNameCodec: JsonCodec[BucketName] = stringCodec.xmap(
@@ -22,6 +20,8 @@ object BucketName {
 
 final case class BucketNames(names: Seq[BucketName]) {
   def +(that: BucketNames): BucketNames = BucketNames(names ++ that.names)
+  def map(f: String => String): BucketNames =
+    BucketNames(names.map(name => BucketName(f(name.name))))
   override def toString: String = names.map(n => s"- ${n.name}").mkString("\n")
 }
 
@@ -35,6 +35,9 @@ object BucketNames {
 }
 
 final case class FullBucket(bucketName: BucketName, values: Seq[String]) {
+  self =>
+  def mapValues(f: String => String): FullBucket =
+    self.copy(values = values.map(f))
   override def toString = s"- ${bucketName.name}\n${values.mkString("\n")}"
 }
 
@@ -64,6 +67,7 @@ final case class BucketsTask(
     id: BucketsTaskId,
     name: String,
     description: String,
+    maxItemsNumber: Int,
     bucketNames: BucketNames,
     fullBuckets: Seq[FullBucket]
 ) {
@@ -71,6 +75,7 @@ final case class BucketsTask(
     BucketsTaskDTO(
       name = name,
       description = description,
+      maxItemsNumber = maxItemsNumber,
       task =
         fullBuckets.map(_.toString).mkString("\n") + "\n" + bucketNames.toString
     )
@@ -79,47 +84,7 @@ final case class BucketsTask(
 final case class ParseError(msg: String) extends Exception
 
 object BucketsTask {
-
-  def fromBucketsTaskDTO(
-      t: BucketsTaskDTO,
-      id: BucketsTaskId
-  ): Either[ParseError, BucketsTask] =
-    parse(t.task, Parser.bucketsTask(_)).fold(
-      (_, _, _) => Left(ParseError(s"Неправильный формат файла с заданиями")),
-      (x, _) =>
-        Right(
-          BucketsTask(
-            id,
-            t.name,
-            t.description,
-            x.names,
-            x.fullBuckets
-          )
-        )
-    )
-
   implicit val bucketsTaskCodec: JsonCodec[BucketsTask] =
     DeriveJsonCodec.gen[BucketsTask]
 }
 
-object Parser {
-  def bucketName[_: P]: P[BucketName] =
-    P("-" ~ " ".rep ~ CharPred(_ != '\n').rep.! ~ ("\n" | End))
-      .map(BucketName(_))
-  def bucketNames[_: P]: P[BucketNames] =
-    P((bucketName ~ &("-" | End)).rep).map(BucketNames(_))
-
-  def bucketValue[_: P]: P[String] =
-    P(&(CharPred(_ != '-')) ~ CharPred(_ != '\n').rep.! ~ ("\n" | End))
-  def bucketValues[_: P]: P[Seq[String]] = P(bucketValue.rep(1))
-
-  def fullBucket[_: P]: P[FullBucket] =
-    P(bucketName ~ bucketValues).map {
-      case (name, values) => FullBucket(name, values)
-    }
-
-  def bucketsTask[_: P]: P[ParsedBucketsTask] =
-    P(fullBucket.rep(1) ~ bucketNames).map {
-      case (fs, ns) => ParsedBucketsTask(ns, fs)
-    }
-}

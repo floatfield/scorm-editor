@@ -2,6 +2,7 @@ package ru.studyground.solver
 
 import com.raquo.laminar.api.L._
 import org.scalajs.dom.{DragEvent, MouseEvent}
+import ru.studyground.{BucketDTO => Bucket}
 
 object AnswerBucket {
   def renderBucket(
@@ -57,7 +58,7 @@ object AnswerBucket {
           onClick --> commandObserver.contramap[MouseEvent](_ =>
             Command.ShowModal(id)
           ),
-          "Add answer"
+          "Добавить ответ"
         )
       ),
       onDragOver --> Observer[DragEvent](_.preventDefault()),

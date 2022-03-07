@@ -33,8 +33,7 @@ object webApp extends JavaModule { web =>
       ivy"io.laminext::core::$laminarVersion",
       ivy"com.raquo::airstream::$laminarVersion",
       ivy"com.raquo::waypoint::0.5.0",
-      ivy"dev.zio::zio-json::$zioJsonVersion",
-      ivy"com.lihaoyi::fastparse::$fastParseVersion"
+      ivy"dev.zio::zio-json::$zioJsonVersion"
     )
   }
 
@@ -49,9 +48,9 @@ object webApp extends JavaModule { web =>
     override def ivyDeps = Agg(
       ivy"org.scala-js::scalajs-dom::2.0.0",
       ivy"com.raquo::laminar::$laminarVersion",
+      ivy"io.laminext::core::$laminarVersion",
       ivy"com.raquo::airstream::$laminarVersion",
-      ivy"dev.zio::zio-json::$zioJsonVersion",
-      ivy"com.lihaoyi::fastparse::$fastParseVersion"
+      ivy"dev.zio::zio-json::$zioJsonVersion"
     )
   }
 

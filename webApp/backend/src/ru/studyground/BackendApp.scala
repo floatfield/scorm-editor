@@ -5,7 +5,6 @@ import ru.studyground.config.config.{live => configLayer}
 import ru.studyground.domain.buckets.task.BucketsTaskRepository
 import ru.studyground.domain.user.UserDBRepo
 import ru.studyground.http.BucketsServer.startServer
-import ru.studyground.http.BucketsTaskEvent
 import ru.studyground.jwt.JwtToken
 import zio._
 import zio.blocking.Blocking
@@ -36,8 +35,6 @@ object BackendApp extends App {
 
   private val jwtTokenLayer = appConfigLayer >>> JwtToken.live
 
-  private val bucketsTaskEventLayer = Hub.bounded[BucketsTaskEvent](30).toLayer
-
   private val backendAppLayer =
     Blocking.live ++
       jwtTokenLayer ++
@@ -45,7 +42,6 @@ object BackendApp extends App {
       userRepoLayer ++
       jwtTokenLayer ++
       bucketsTaskRepoLayer ++
-      bucketsTaskEventLayer ++
       appConfigLayer ++
       staticDirectoryLayer
 

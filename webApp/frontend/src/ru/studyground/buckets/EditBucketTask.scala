@@ -41,6 +41,17 @@ object EditBucketTask {
       ),
       div(
         cls("field"),
+        label("Максимальное количество заданий в ведёрке"),
+        input(
+          typ("number"),
+          name("maxNumberOfValues"),
+          value <-- $taskState.map(_.maxItemsNumber.toString),
+          onChange.preventDefault.mapToValue --> commandObserver
+            .contramap[String](value => BucketsTaskCommand.SetMaxNumberOfValues(value.toInt))
+        )
+      ),
+      div(
+        cls("field"),
         TextFileInput(
           newBucketTaskId,
           commandObserver.contramap[String](BucketsTaskCommand.SetTask)

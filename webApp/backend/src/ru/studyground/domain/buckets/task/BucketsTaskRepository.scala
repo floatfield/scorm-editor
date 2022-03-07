@@ -70,6 +70,7 @@ final case class BucketsTaskDTO(
         BucketsTask(
           id = BucketsTaskId(id),
           name = self.name,
+          maxItemsNumber = maxItemsNumber,
           description = self.description,
           bucketNames = BucketNames(self.bucketNames.map(BucketName(_))),
           fullBuckets = buckets
@@ -83,7 +84,7 @@ object BucketsTaskDTO {
     BucketsTaskDTO(
       id = bucketsTask.id.value,
       name = bucketsTask.name,
-      maxItemsNumber = 5,
+      maxItemsNumber = bucketsTask.maxItemsNumber,
       description = bucketsTask.description,
       bucketNames = bucketsTask.bucketNames.names.map(_.name),
       fullBuckets = bucketsTask.fullBuckets.toJson

@@ -15,10 +15,6 @@ object MainApp {
 
   private val routes = List(WelcomeApp.route, LoginApp.route) ++ BucketsApp.routes
 
-  state.signal.foreach(state => println(state))(unsafeWindowOwner)
-
-  println("hey!")
-
   private val router = new Router[Page](
     routes = routes,
     getPageTitle = _ => "Желтые коробочки",

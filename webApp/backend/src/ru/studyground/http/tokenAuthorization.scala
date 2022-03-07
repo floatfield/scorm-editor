@@ -39,4 +39,19 @@ object tokenAuthorization {
       case r if pf.isDefinedAt(r) =>
         validateToken(r).collectM(HttpError.InternalServerError())(pf)
     }
+
+  def authRedirectM[R](
+      location: String,
+      pf: PartialFunction[Request, ZIO[R, HttpError, Response[R, HttpError]]]
+  ): HttpApp[R with Has[JwtToken], HttpError] =
+    Http.collectM[Request] {
+      case r if pf.isDefinedAt(r) =>
+        validateToken(r).foldM(
+          {
+            case HttpError.BadRequest(_) => ZIO.succeed(Response.redirect(location))
+            case e => ZIO.fail(e)
+          },
+          req => pf(req)
+        )
+    }
 }

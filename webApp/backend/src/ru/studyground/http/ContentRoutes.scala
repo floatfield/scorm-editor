@@ -1,16 +1,15 @@
 package ru.studyground.http
 
+import ru.studyground.config.AppConfig
 import ru.studyground.jwt.JwtToken
 import zhttp.http._
-import zhttp._
 import zio.blocking.Blocking
 import zio.cache.{Cache, Lookup}
 import zio.duration.durationInt
-import zio.stream.ZSink
-import zio.{Has, URIO, ZIO}
+import zio.{Has, ZIO}
 
 object ContentRoutes {
-  type Env = Has[StaticDirectorySet] with Blocking with Has[JwtToken]
+  type Env = Has[StaticDirectorySet] with Has[AppConfig] with Blocking with Has[JwtToken]
 
   private val templateCache =
     Cache.make[String, Blocking, HttpError, String](
@@ -28,7 +27,7 @@ object ContentRoutes {
     .flatMap(ZIO.fromOption(_))
     .orElseFail(HttpError.InternalServerError())
 
-  private val authed = authorizedM[Env] {
+  private val authed = authorizedOrRedirectedM[Env]("/login") {
     case Method.GET -> !! =>
       renderApp
     case Method.GET -> !! / "buckets" =>
@@ -37,9 +36,10 @@ object ContentRoutes {
       for {
         d <- staticDir
         cache <- templateCache
+        url <- ZIO.access[Has[AppConfig]](_.get.bucketServer)
         template <- cache.get(s"$d/buckets-task.mustache")
-        res = template.replace("{{bucketsTaskId}}", uuid)
-      } yield Response.text(res)
+        res = template.replace("{{bucketsTaskId}}", uuid).replace("{{bucketServer}}", url)
+      } yield Response(Status.OK, List(Header.contentTypeHtml), HttpData.fromText(res))
   }
 
   private val unauthed = Http.collectM[Request] {

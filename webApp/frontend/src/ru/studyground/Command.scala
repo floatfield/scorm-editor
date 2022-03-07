@@ -38,6 +38,7 @@ sealed trait BucketsTaskCommand extends Command
 object BucketsTaskCommand {
   final case class SetName(value: String) extends BucketsTaskCommand
   final case class SetDescription(value: String) extends BucketsTaskCommand
+  final case class SetMaxNumberOfValues(m: Int) extends BucketsTaskCommand
   final case class SetTask(value: String) extends BucketsTaskCommand
   final case class SetFormState(formState: FormState) extends BucketsTaskCommand
   final case class SetState(bucketsTaskState: BucketsTaskState) extends BucketsTaskCommand
@@ -56,6 +57,8 @@ object BucketsTaskCommand {
         case _ =>
           state.copy(formState = formState)
       }
+      case SetMaxNumberOfValues(m) =>
+        state.copy(maxItemsNumber = m)
       case SetState(s) => s
     }
 }
@@ -70,7 +73,6 @@ object BucketsListCommand {
 
   def dispatch(state: MainAppState, command: BucketsListCommand): MainAppState = command match {
     case SetBucketsTasks(tasks) =>
-      println("setting tasks", tasks)
       state.setBucketsTasks(tasks)
     case PrependBucketsTasks(tasks) =>
       state.prependBucketsTasks(tasks)
