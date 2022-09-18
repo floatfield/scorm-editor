@@ -1,6 +1,15 @@
 package ru.studyground.solver
 
-import ru.studyground.{BucketsAssignment, BucketsTaskId, BucketDTO => Bucket}
+import ru.studyground.solver.AssignmentState.{Done, SendingAnswer, Solving}
+import ru.studyground.{AssessmentResult, BucketsAssignment, BucketsTaskId, BucketDTO => Bucket}
+
+sealed trait AssignmentState
+
+object AssignmentState {
+  case object Solving extends AssignmentState
+  case object SendingAnswer extends AssignmentState
+  final case class Done(result: AssessmentResult) extends AssignmentState
+}
 
 case class State(
     id: BucketsTaskId,
@@ -8,7 +17,8 @@ case class State(
     answers: Vector[Bucket],
     values: List[String],
     bucketNames: Set[String],
-    modal: ModalState
+    modal: ModalState,
+    assignmentState: AssignmentState
 ) { self =>
   def assignBucketName(id: Int, name: String): State = {
     val bucket = answers(id)
@@ -51,6 +61,12 @@ case class State(
 
   def resetModal: State =
     self.copy(modal = ModalState.Closed)
+
+  def submitResult: State =
+    self.copy(assignmentState = SendingAnswer)
+
+  def displayResult(assessmentResult: AssessmentResult): State =
+    self.copy(assignmentState = Done(assessmentResult))
 }
 
 object State {
@@ -60,6 +76,7 @@ object State {
     answers = assignment.assignedBucketNames.map(Bucket.fromName).toVector,
     values = assignment.values,
     bucketNames = assignment.bucketNames.toSet,
-    modal = ModalState.Closed
+    modal = ModalState.Closed,
+    assignmentState = Solving
   )
 }

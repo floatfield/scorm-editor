@@ -1,5 +1,7 @@
 package ru.studyground.solver
 
+import ru.studyground.AssessmentResult
+
 sealed trait Command
 
 object Command {
@@ -10,6 +12,8 @@ object Command {
   case class SetAnswers(bucketId: Int, answers: List[String]) extends Command
   case class ShowModal(bucketId: Int) extends Command
   case object ResetModal extends Command
+  case object SubmitResult extends Command
+  case class DisplayResult(assessmentResult: AssessmentResult) extends Command
 
   def dispatch(state: State, command: Command): State =
     command match {
@@ -29,6 +33,10 @@ object Command {
         state.showModal(bucketId)
       case ResetModal =>
         state.resetModal
+      case SubmitResult =>
+        state.submitResult
+      case DisplayResult(result) =>
+        state.displayResult(result)
     }
 }
 

@@ -12,3 +12,19 @@
 	position: absolute;
 	z-index: -1;
 }
+
+#app-container {
+	height: 100%;
+}
+
+#app-container .assignment-description {
+	width: 100%;
+}
+
+#app-container > div {
+	height: 100%;
+}
+
+.bucket-loader {
+	height: 100%;
+}
